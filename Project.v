@@ -81,12 +81,16 @@ wire				write_audio_out;
  *****************************************************************************/
 
 
+wire [1:0] amplification;
+assign amplification = SW[2:1];
 
 assign read_audio_in			= audio_in_available & audio_out_allowed;
 
-assign left_channel_audio_out	= left_channel_audio_in;
-assign right_channel_audio_out	= right_channel_audio_in;
-assign write_audio_out			= audio_in_available & audio_out_allowed & ~SW[0];
+
+
+assign left_channel_audio_out	= left_channel_audio_in << amplification;
+assign right_channel_audio_out	= right_channel_audio_in << amplification;
+assign write_audio_out			= audio_in_available & audio_out_allowed & SW[0];
 
 wire	[30:0] abs_sample;
 assign abs_sample = left_channel_audio_out[31] ? -left_channel_audio_out[30:0] : left_channel_audio_out[30:0];
@@ -98,17 +102,17 @@ begin
 	amplitude = 10'b0;
     if(abs_sample > 31'b1_000_000_000_000_000_000_000_000_000_000) //30 zeroes
         amplitude = 10'b0111111111;
-    else if(abs_sample > 31'b1_000_000_000_000_000_000_000_000_000) //24  
+    else if(abs_sample > 31'b1_000_000_000_000_000_000_000_000_000) //27 Zeroes
         amplitude = 10'b0011111111;
-    else if(abs_sample > 31'b1_000_000_000_000_000_000_000_000)
+    else if(abs_sample > 31'b1_000_000_000_000_000_000_000_000_00)
         amplitude = 10'b0001111111;
-    else if(abs_sample > 31'b1_000_000_000_000_000_000_000)
+    else if(abs_sample > 31'b1_000_000_000_000_000_000_000_000_0)
         amplitude = 10'b0000111111;
-    else if(abs_sample > 31'b1_000_000_000_000_000_000_0)
+    else if(abs_sample > 31'b1_000_000_000_000_000_000_000)
         amplitude = 10'b0000011111;
-    else if(abs_sample > 31'b1_000_000_000_000_000_000)
+    else if(abs_sample > 31'b1_000_000_000_000_000_000_00)
         amplitude = 10'b0000001111;
-    else if(abs_sample > 31'b1_000_000_000_000_000_00)
+    else if(abs_sample > 31'b1_000_000_000_000_000_000_0)
         amplitude = 10'b0000000111;
     else if(abs_sample > 31'b1_000_000_000_000_000_0)
         amplitude = 10'b0000000011;
@@ -164,6 +168,8 @@ avconf #(.USE_MIC_INPUT(0)) avc (
 	.reset						(~KEY[0])
 );
 
+
+
 TunerFFT FFT1 (
 
 	.clk							(CLOCK_50),
@@ -188,5 +194,27 @@ TunerFFT FFT1 (
 	.source_real  (source_real),  //       .source_real
 	.source_imag  (source_imag),  //       .source_imag
 	.fftpts_out   (fftpts_out)    //       .fftpts_out
+);
+
+DualClockFIFOBucket FIFO(
+					
+		.aclr (aclr),
+		.data (data),
+		.rdclk (rdclk),
+		.rdreq (rdreq),
+		.wrclk (wrclk),
+		.wrreq (wrreq),
+		.q (sub_wire0),
+		.rdempty (sub_wire1), //empty from reading
+		.rdfull (sub_wire2), //full from reading //this
+		.wrempty (sub_wire3), //nothing else to write //this are needed
+		.wrfull (sub_wire4), //still full from writing
+		.eccstatus (),
+		.rdusedw (),
+		.wrusedw ());
+
+
+) 
+
 endmodule
 
