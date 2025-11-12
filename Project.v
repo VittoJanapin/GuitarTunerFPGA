@@ -64,63 +64,65 @@ wire		[31:0]	left_channel_audio_out;
 wire		[31:0]	right_channel_audio_out;
 wire				write_audio_out;
 
-// Internal Registers
+/*******************************************************************************
 
+Audio Controller Interfacing
 
-// State Machine Registers
+********************************************************************************/
 
-
-
-/*****************************************************************************
- *                             Sequential Logic                              *
- *****************************************************************************/
-
-
-/*****************************************************************************
- *                            Combinational Logic                            *
- *****************************************************************************/
-
-
-wire [1:0] amplification;
-assign amplification = SW[2:1];
-
-assign read_audio_in			= audio_in_available & audio_out_allowed;
-
-
+assign read_audio_in			= audio_in_available; //will set a flag for the audio module to read audio in if theres available signals
+assign write_audio_out			= audio_in_available & audio_out_allowed & SW[0]; //set flag to allow outputting
 
 assign left_channel_audio_out	= left_channel_audio_in << amplification;
 assign right_channel_audio_out	= right_channel_audio_in << amplification;
-assign write_audio_out			= audio_in_available & audio_out_allowed & SW[0];
 
+/*******************************************************************************
+
+Amplification uses 3-bit specifications, 
+Bit shift left by n bits (each level is a power of 2 more)
+
+********************************************************************************/
+wire [2:0] amplification;
+assign amplification = SW[3:1];
+
+/*******************************************************************************
+
+Signal Strength Detector, This will display how much amplitude there is
+This follows the decibel scale
+max is 2^31-1 and min is obviously 0
+divide that into ten and account for the logarithmic pattern
+each bin is calculated by 10^(18.66n/20)
+We evaluate the highest amplitude first
+
+********************************************************************************/
 wire	[30:0] abs_sample;
 assign abs_sample = left_channel_audio_out[31] ? -left_channel_audio_out[30:0] : left_channel_audio_out[30:0];
-
-//signal strength module
 reg     [9:0]   amplitude;
 always @ (*)
 begin
 	amplitude = 10'b0;
-    if(abs_sample > 31'b1_000_000_000_000_000_000_000_000_000_000) //30 zeroes
+    if(abs_sample > 31'd2137962000) //MAX
+        amplitude = 10'b1111111111;
+    else if(abs_sample > 31'd249459500)
         amplitude = 10'b0111111111;
-    else if(abs_sample > 31'b1_000_000_000_000_000_000_000_000_000) //27 Zeroes
+    else if(abs_sample > 31'd29107170)
         amplitude = 10'b0011111111;
-    else if(abs_sample > 31'b1_000_000_000_000_000_000_000_000_00)
+    else if(abs_sample > 31'd3396253)
         amplitude = 10'b0001111111;
-    else if(abs_sample > 31'b1_000_000_000_000_000_000_000_000_0)
+    else if(abs_sample > 31'd396278)
         amplitude = 10'b0000111111;
-    else if(abs_sample > 31'b1_000_000_000_000_000_000_000)
+    else if(abs_sample > 31'd46238)
         amplitude = 10'b0000011111;
-    else if(abs_sample > 31'b1_000_000_000_000_000_000_00)
+    else if(abs_sample > 31'd5395)
         amplitude = 10'b0000001111;
-    else if(abs_sample > 31'b1_000_000_000_000_000_000_0)
+    else if(abs_sample > 31'd629)
         amplitude = 10'b0000000111;
-    else if(abs_sample > 31'b1_000_000_000_000_000_0)
+    else if(abs_sample > 31'd73)
         amplitude = 10'b0000000011;
-    else if(abs_sample > 31'b1_000_000_000_000_000)
+    else if(abs_sample > 31'd8)
         amplitude = 10'b0000000001;
     else
         amplitude = 10'b0000000000;
-   
 end
 
 assign LEDR[9:0] = amplitude;
@@ -169,6 +171,7 @@ avconf #(.USE_MIC_INPUT(0)) avc (
 );
 
 
+/**********************************************
 
 TunerFFT FFT1 (
 
@@ -214,7 +217,7 @@ DualClockFIFOBucket FIFO(
 		.wrusedw ());
 
 
-) 
-
+);
+******************************************/ 
 endmodule
 
