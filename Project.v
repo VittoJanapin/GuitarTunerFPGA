@@ -199,25 +199,131 @@ TunerFFT FFT1 (
 	.fftpts_out   (fftpts_out)    //       .fftpts_out
 );
 
+*************/
+
+
+/*****************************************************************************
+ *                              Controlling Variables                        *
+ *****************************************************************************/
+//writing clocked in at 48K
+wire wrfull, wrempty, wrclk;
+reg wrreq;
+
+assign wrclk = AUD_ADCLRCK; //set to whatever preconfigure sampling rate
+
+
+//reading clocked in at 50M
+wire rdempty, rdfull, rdclk;
+reg rdreq;
+assign rdclk = CLOCK_50; //this is the same clock feeding into the fft
+//general stuff
+wire aclr;
+wire [31:0] audio_in, audio_out;
+
+assign audio_in = left_channel_audio_in;
+assign 
+
+/*****************************************************************************
+ *                              FIFO READ CONTROL                            *
+ *****************************************************************************/
+
+//lets do states
+reg [2:0] write_state, next_write_state;
+
+parameter WAIT_AUDIO_DATA = 3'b0, IS_FULL = 3'b001, WRITE_REQUEST = 3'b010, FILLING = 3'b011, FULL = 3'b100;
+
+//cct a
+
+always @ (*)
+    begin
+        case(write_state)
+        WAIT_AUDIO_DATA: if(audio_in_available) write_next_state = IS_FULL;
+        IS_FULL: if(!wrfull) write_next_state = WRITE_REQUEST; else write_next_state = IS_FULL;
+        WRITE_REQUEST: write_next_state = FILLING
+        FILLING: if(wrfull) write_next_state = FULL; else write_next_state = FILLING;
+        FULL: if(wrempty) write_next_state = IS_FULL; else write_next_state = FULL;
+        default: next_write_state = WAIT_AUDIO_DATA;
+        endcase
+    end
+
+//flip flop
+
+always @ (posedge AUD_ADCLRCK) 
+    begin
+        if(!KEY[0])
+            write_state <= WAIT_AUDIO_DATA;
+        else
+            write_state <= next_write_state;
+    end
+
+//based on the current state what are the outputs
+always @ (*)
+    begin
+        case (write_state)
+            WAIT_AUDIO_DATA: wrreq = 0;
+            IS_FULL: wrreq = 0;
+            WRITE_REQUEST: wrreq = 1;
+            FILLING: wrreq = 1;
+            FULL: wrreq = 0;
+            default: wrreq = 0;
+        endcase 
+    end
+
+/*****************************************************************************
+ *                              FIFO WRITE CONTROL                            *
+ *****************************************************************************/
+
+reg [1:0] read_state, next_read_state;
+
+Parameter WAIT = 2'b0, READ_REQUEST = 2'b01, EMPTYING = 2'b10, EMPTY = 2'b11;
+
+always @ (*)
+    begin
+        case (read_state)
+            WAIT: if(rdfull) next_read_state = READ_REQUEST; else next_read_state = WAIT;
+            READ_REQUEST: next_read_state = EMPTYING;
+            EMPTYING: if(rdempty) next_read_state = EMPTY; else next_read_state = EMPTYING;
+            EMPTY: next_read_state = WAIT;
+        endcase
+    end
+
+always @ (posedge CLOCK_50) 
+    begin
+        if(!KEY[0])
+            next_read_state = WAIT;
+        else
+            read_state <= next_read_state;
+    end
+
+always @ (*) 
+    begin 
+        case (read_state)
+            WAIT: rdreq = 0;
+            READ_REQUEST: rdreq = 1;
+            EMPTYING: rdreq = 1;
+            EMPTY: rdreq = 0;
+        endcase
+    end
+
+
+
 DualClockFIFOBucket FIFO(
 					
-		.aclr (aclr),
-		.data (data),
-		.rdclk (rdclk),
-		.rdreq (rdreq),
-		.wrclk (wrclk),
-		.wrreq (wrreq),
-		.q (sub_wire0),
-		.rdempty (sub_wire1), //empty from reading
-		.rdfull (sub_wire2), //full from reading //this
-		.wrempty (sub_wire3), //nothing else to write //this are needed
-		.wrfull (sub_wire4), //still full from writing
-		.eccstatus (),
-		.rdusedw (),
-		.wrusedw ());
-
-
+    .aclr (aclr), //check
+    .data (audio_in), //check
+    .rdclk (rdclk), //check
+    .rdreq (rdreq), //check
+    .wrclk (wrclk), //check
+    .wrreq (wrreq), //check
+    .q (audio_out), // check 
+    .rdempty (rdempty), //empty from reading
+    .rdfull (rdfull), //full from reading //this
+    .wrempty (wrempty), //nothc`ing else to write //this are needed
+    .wrfull (wrfull), //still full from writing
+    .eccstatus (),
+    .rdusedw (),
+    .wrusedw ()
 );
-******************************************/ 
+
 endmodule
 
