@@ -13,13 +13,13 @@ vDE1_SoC_Audio_Example
 !i10b 1
 !s100 j2MLc@zAI^h@LTd>A;RkO0
 I9DEQbf=<e_KAk=Cdge`JB1
-VDg1SIo80bB@j0V0VzS_@n1
+Z1 VDg1SIo80bB@j0V0VzS_@n1
 R0
 w1762814349
 8C:/Users/vitto/FALL_25/ECE241/Project/DE1_SoC_Audio_Example.v
 FC:/Users/vitto/FALL_25/ECE241/Project/DE1_SoC_Audio_Example.v
 L0 1
-OV;L;10.5b;63
+Z2 OV;L;10.5b;63
 r1
 !s85 0
 31
@@ -27,6 +27,28 @@ r1
 !s107 C:/Users/vitto/FALL_25/ECE241/Project/DE1_SoC_Audio_Example.v|
 !s90 -reportprogress|300|-work|work|C:/Users/vitto/FALL_25/ECE241/Project/DE1_SoC_Audio_Example.v|
 !i113 1
-o-work work
-tCvgOpt 0
+Z3 o-work work
+Z4 tCvgOpt 0
 n@d@e1_@so@c_@audio_@example
+vProject
+!s110 1763166804
+!i10b 1
+!s100 WCjA4@<<i;aChDHaUnClD3
+INdcQ2miXn2cOjAJ:^WZ[Q1
+R1
+dC:/Users/vitto/FALL_25/ECE241/GuitarTunerFPGA
+w1763166803
+8C:/Users/vitto/FALL_25/ECE241/GuitarTunerFPGA/Project.v
+FC:/Users/vitto/FALL_25/ECE241/GuitarTunerFPGA/Project.v
+L0 1
+R2
+r1
+!s85 0
+31
+!s108 1763166804.000000
+!s107 C:/Users/vitto/FALL_25/ECE241/GuitarTunerFPGA/Project.v|
+!s90 -reportprogress|300|-work|work|C:/Users/vitto/FALL_25/ECE241/GuitarTunerFPGA/Project.v|
+!i113 1
+R3
+R4
+n@project

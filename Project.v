@@ -73,6 +73,9 @@ Audio Controller Interfacing
 assign read_audio_in			= audio_in_available; //will set a flag for the audio module to read audio in if theres available signals
 assign write_audio_out			= audio_in_available & audio_out_allowed & SW[0]; //set flag to allow outputting
 
+wire [2:0] amplification;
+assign amplification = SW[3:1];
+
 assign left_channel_audio_out	= left_channel_audio_in << amplification;
 assign right_channel_audio_out	= right_channel_audio_in << amplification;
 
@@ -82,8 +85,6 @@ Amplification uses 3-bit specifications,
 Bit shift left by n bits (each level is a power of 2 more)
 
 ********************************************************************************/
-wire [2:0] amplification;
-assign amplification = SW[3:1];
 
 /*******************************************************************************
 
@@ -221,27 +222,25 @@ wire aclr;
 wire [31:0] audio_in, audio_out;
 
 assign audio_in = left_channel_audio_in;
-assign 
-
 /*****************************************************************************
- *                              FIFO READ CONTROL                            *
+ *                              FIFO WRITE CONTROL                            *
  *****************************************************************************/
 
-//lets do states
+wire [13:0] wrusedw;
 reg [2:0] write_state, next_write_state;
 
-parameter WAIT_AUDIO_DATA = 3'b0, IS_FULL = 3'b001, WRITE_REQUEST = 3'b010, FILLING = 3'b011, FULL = 3'b100;
+parameter WAIT_AUDIO_DATA = 3'b000, START_WRITE = 3'b001, WRITING = 3'b010, LAST_WRITE = 3'b011, DISABLE_REQ = 3'b100;
 
 //cct a
 
 always @ (*)
     begin
         case(write_state)
-        WAIT_AUDIO_DATA: if(audio_in_available) write_next_state = IS_FULL;
-        IS_FULL: if(!wrfull) write_next_state = WRITE_REQUEST; else write_next_state = IS_FULL;
-        WRITE_REQUEST: write_next_state = FILLING
-        FILLING: if(wrfull) write_next_state = FULL; else write_next_state = FILLING;
-        FULL: if(wrempty) write_next_state = IS_FULL; else write_next_state = FULL;
+        WAIT_AUDIO_DATA: if(audio_in_available & wrempty) next_write_state = START_WRITE; else next_write_state = WAIT_AUDIO_DATA;
+        START_WRITE: next_write_state = WRITING;
+        WRITING: if(wrusedw == 14'd8191) next_write_state = LAST_WRITE; else next_write_state = WRITING;
+        LAST_WRITE: next_write_state = DISABLE_REQ;
+        DISABLE_REQ: next_write_state = WAIT_AUDIO_DATA;
         default: next_write_state = WAIT_AUDIO_DATA;
         endcase
     end
@@ -261,36 +260,45 @@ always @ (*)
     begin
         case (write_state)
             WAIT_AUDIO_DATA: wrreq = 0;
-            IS_FULL: wrreq = 0;
-            WRITE_REQUEST: wrreq = 1;
-            FILLING: wrreq = 1;
-            FULL: wrreq = 0;
+            START_WRITE: wrreq = 1;
+            WRITING: wrreq = 1;
+            LAST_WRITE: wrreq = 1;
+            DISABLE_REQ: wrreq = 0;
             default: wrreq = 0;
         endcase 
     end
 
 /*****************************************************************************
- *                              FIFO WRITE CONTROL                            *
+ *                              FIFO READ CONTROL                            *
  *****************************************************************************/
 
-reg [1:0] read_state, next_read_state;
+// FFT PARAMS
+//audio out is linked to fft 
+reg sink_valid, sink_sop, sink_eop, sink_ready;
+reg [2:0] read_state, next_read_state;
+wire [13:0] rdusedw;
 
-Parameter WAIT = 2'b0, READ_REQUEST = 2'b01, EMPTYING = 2'b10, EMPTY = 2'b11;
+parameter WAIT_FIFO = 3'b000, START_READ = 3'b001, READING = 3'b010, LAST_READ = 3'b011, DISABLE_EOP = 3'b100;
 
 always @ (*)
     begin
         case (read_state)
-            WAIT: if(rdfull) next_read_state = READ_REQUEST; else next_read_state = WAIT;
-            READ_REQUEST: next_read_state = EMPTYING;
-            EMPTYING: if(rdempty) next_read_state = EMPTY; else next_read_state = EMPTYING;
-            EMPTY: next_read_state = WAIT;
+            WAIT_FIFO: if(rdfull & sink_ready) next_read_state = START_READ; else next_read_state = WAIT_FIFO;
+            START_READ: next_read_state = READING;
+            READING: if(rdusedw == 1) next_read_state = LAST_READ; else next_read_state = READING;
+            LAST_READ:
+                begin
+                    next_read_state = DISABLE_EOP;
+                end
+            DISABLE_EOP: next_read_state = WAIT_FIFO;
+            default: next_read_state = WAIT_FIFO;
         endcase
     end
 
 always @ (posedge CLOCK_50) 
     begin
         if(!KEY[0])
-            next_read_state = WAIT;
+            next_read_state <= WAIT_FIFO;
         else
             read_state <= next_read_state;
     end
@@ -298,14 +306,59 @@ always @ (posedge CLOCK_50)
 always @ (*) 
     begin 
         case (read_state)
-            WAIT: rdreq = 0;
-            READ_REQUEST: rdreq = 1;
-            EMPTYING: rdreq = 1;
-            EMPTY: rdreq = 0;
+            WAIT_FIFO: 
+                begin
+                    rdreq = 0;
+                    sink_valid = 0;
+                    sink_sop = 0;
+                    sink_eop = 0;
+
+                end
+            START_READ:
+                begin
+                    rdreq = 1;
+                    sink_valid = 1;
+                    sink_sop = 1;
+                    sink_eop = 0;
+                end
+            READING: 
+                begin
+                    rdreq = 1;
+                    sink_valid = 1;
+                    sink_sop = 0;
+                    sink_eop = 0;
+                end
+            LAST_READ:
+                begin
+                    rdreq = 1;
+                    sink_valid = 1;
+                    sink_sop = 0;
+                    sink_eop = 1;
+                end
+            DISABLE_EOP:
+                begin
+                    rdreq = 0;
+                    sink_valid = 0;
+                    sink_sop = 0;
+                    sink_eop = 0;
+                end
+            default: 
+                begin
+                    rdreq = 0;
+                    sink_valid = 0;
+                    sink_sop = 0;
+                    sink_eop = 0;
+                end
         endcase
     end
 
+/****
 
+Reconfigure for handshake with FFT
+
+***/
+
+wire [1:0] eccstatus; //needed when debugging
 
 DualClockFIFOBucket FIFO(
 					
@@ -320,10 +373,50 @@ DualClockFIFOBucket FIFO(
     .rdfull (rdfull), //full from reading //this
     .wrempty (wrempty), //nothc`ing else to write //this are needed
     .wrfull (wrfull), //still full from writing
-    .eccstatus (),
-    .rdusedw (),
-    .wrusedw ()
+    .eccstatus (eccstatus),
+    .rdusedw (rdusedw),
+    .wrusedw (wrusedw)
 );
 
+
+//fft constants
+
+wire [31:0] nothing_imagniary;
+assign nothing_imagniary = 32'd0;
+wire [13:0] fftpts_in;
+assign fftpts_in = 14'd8192;
+wire [13:0] fftpts_out;
+assign fftpts_out = 14'd8192;
+
+//fft outputs
+wire source_sop, source_eop, source_ready; 
+wire [31:0] source_real, source_imag; 
+
+//fft output flags set by us
+wire source_valid; //whenever you are ready to read a frame 
+
+//error flags
+wire [1:0] sink_error, source_error;
+
+TunerFFT FFT (
+    .clk          (CLOCK_50),          //    clk.clk
+    .reset_n      (~KEY[0]),      //    rst.reset_n
+    .sink_valid   (sink_valid),   //   us controlled
+    .sink_ready   (sink_ready),   //       .tell us
+    .sink_error   (sink_error),   //       .sink_error
+    .sink_sop     (sink_sop),     //       .sink_sop
+    .sink_eop     (sink_eop),     //       .sink_eop
+    .sink_real    (audio_out),    //       .sink_real
+    .sink_imag    (nothing_imagniary),    //       .does not exist for audio
+    .fftpts_in    (fftpts_in),    //       .fftpts_in
+    .source_valid (source_valid), // source.source_valid
+    .source_ready (source_ready), //       .source_ready
+    .source_error (source_error), //       .source_error
+    .source_sop   (source_sop),   //       .source_sop
+    .source_eop   (source_eop),   //       .source_eop
+    .source_real  (source_real),  //       .source_real
+    .source_imag  (source_imag),  //       .source_imag
+    .fftpts_out   (fftpts_out)    //       .fftpts_out
+);
 endmodule
 
