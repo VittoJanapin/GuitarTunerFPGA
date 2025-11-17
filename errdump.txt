@@ -1,0 +1,2 @@
+Error (127001): Can't find Memory Initialization File or Hexadecimal (Intel-Format) File //VSRV1/A.Homes$/janapinr/Downloads/GuitarTunerFPGA-main/Project/TunerFFT_fft_ii_0_twrfp2.hex for ROM instance ALTSYNCRAM
+Error (12152): Can't elaborate user hierarchy "TunerFFT:FFT|TunerFFT_fft_ii_0:fft_ii_0|apn_fftfp_top:apn_fftfp_top_inst|apn_fftfp_core:core_inst|apn_fftfp_stage:\stg:3:stgi|apn_fftfp_twiddle:\gsctb:ctwb|altera_fft_single_port_rom:crtw|altsyncram:\old_ram_gen:old_ram_component|altsyncram_ku34:auto_generated"
