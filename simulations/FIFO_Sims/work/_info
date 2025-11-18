@@ -1,0 +1,284 @@
+m255
+K4
+z2
+13
+!s112 1.1
+!i10d 8192
+!i10e 25
+!i10f 100
+cModel Technology
+Z0 dC:/Users/janapinr/GuitarTunerFPGA/simulations/FIFO_Sims
+vAltera_UP_Audio_Bit_Counter
+Z1 !s110 1763442132
+!i10b 1
+!s100 0o^lS^IaZf6lc8;mFc89O3
+Ib_>11Td_MZ5JAhbUhiXe71
+Z2 VDg1SIo80bB@j0V0VzS_@n1
+R0
+Z3 w1763344831
+8C:/Users/janapinr/GuitarTunerFPGA/AudioModule/Audio_Controller/Altera_UP_Audio_Bit_Counter.v
+FC:/Users/janapinr/GuitarTunerFPGA/AudioModule/Audio_Controller/Altera_UP_Audio_Bit_Counter.v
+Z4 L0 11
+Z5 OV;L;10.5b;63
+r1
+!s85 0
+31
+Z6 !s108 1763442132.000000
+Z7 !s107 C:/Users/janapinr/GuitarTunerFPGA/AudioModule/Audio_Controller/Audio_Controller.v|C:/Users/janapinr/GuitarTunerFPGA/AudioModule/Audio_Controller/Audio_Clock.v|C:/Users/janapinr/GuitarTunerFPGA/AudioModule/Audio_Controller/Altera_UP_SYNC_FIFO.v|C:/Users/janapinr/GuitarTunerFPGA/AudioModule/Audio_Controller/Altera_UP_Clock_Edge.v|C:/Users/janapinr/GuitarTunerFPGA/AudioModule/Audio_Controller/Altera_UP_Audio_Out_Serializer.v|C:/Users/janapinr/GuitarTunerFPGA/AudioModule/Audio_Controller/Altera_UP_Audio_In_Deserializer.v|C:/Users/janapinr/GuitarTunerFPGA/AudioModule/Audio_Controller/Altera_UP_Audio_Bit_Counter.v|
+Z8 !s90 -reportprogress|300|C:/Users/janapinr/GuitarTunerFPGA/AudioModule/Audio_Controller/Altera_UP_Audio_Bit_Counter.v|C:/Users/janapinr/GuitarTunerFPGA/AudioModule/Audio_Controller/Altera_UP_Audio_In_Deserializer.v|C:/Users/janapinr/GuitarTunerFPGA/AudioModule/Audio_Controller/Altera_UP_Audio_Out_Serializer.v|C:/Users/janapinr/GuitarTunerFPGA/AudioModule/Audio_Controller/Altera_UP_Clock_Edge.v|C:/Users/janapinr/GuitarTunerFPGA/AudioModule/Audio_Controller/Altera_UP_SYNC_FIFO.v|C:/Users/janapinr/GuitarTunerFPGA/AudioModule/Audio_Controller/Audio_Clock.v|C:/Users/janapinr/GuitarTunerFPGA/AudioModule/Audio_Controller/Audio_Controller.v|
+!i113 1
+Z9 tCvgOpt 0
+n@altera_@u@p_@audio_@bit_@counter
+vAltera_UP_Audio_In_Deserializer
+R1
+!i10b 1
+!s100 QIN=mllYL6NF954KEZgo00
+Ie=DNfNoDCk^8K45zE8<he1
+R2
+R0
+R3
+8C:/Users/janapinr/GuitarTunerFPGA/AudioModule/Audio_Controller/Altera_UP_Audio_In_Deserializer.v
+FC:/Users/janapinr/GuitarTunerFPGA/AudioModule/Audio_Controller/Altera_UP_Audio_In_Deserializer.v
+L0 9
+R5
+r1
+!s85 0
+31
+R6
+R7
+R8
+!i113 1
+R9
+n@altera_@u@p_@audio_@in_@deserializer
+vAltera_UP_Audio_Out_Serializer
+R1
+!i10b 1
+!s100 ^b>IEB6190omD0d_0TU]R0
+IY3Z]M8?AjZkIAS@A]FL5M3
+R2
+R0
+w1763344832
+8C:/Users/janapinr/GuitarTunerFPGA/AudioModule/Audio_Controller/Altera_UP_Audio_Out_Serializer.v
+FC:/Users/janapinr/GuitarTunerFPGA/AudioModule/Audio_Controller/Altera_UP_Audio_Out_Serializer.v
+L0 9
+R5
+r1
+!s85 0
+31
+R6
+R7
+R8
+!i113 1
+R9
+n@altera_@u@p_@audio_@out_@serializer
+vAltera_UP_Clock_Edge
+R1
+!i10b 1
+!s100 m;MP:OR1QP]f>i1a;Th_h0
+I`DiDN42H4U23^FP>[DWF?0
+R2
+R0
+Z10 w1763344833
+8C:/Users/janapinr/GuitarTunerFPGA/AudioModule/Audio_Controller/Altera_UP_Clock_Edge.v
+FC:/Users/janapinr/GuitarTunerFPGA/AudioModule/Audio_Controller/Altera_UP_Clock_Edge.v
+L0 10
+R5
+r1
+!s85 0
+31
+R6
+R7
+R8
+!i113 1
+R9
+n@altera_@u@p_@clock_@edge
+vAltera_UP_SYNC_FIFO
+R1
+!i10b 1
+!s100 ?S5>gdm0e84HSI=i?VPQ43
+IXHB40@Zdc@=a7im1^Bf8K3
+R2
+R0
+R10
+8C:/Users/janapinr/GuitarTunerFPGA/AudioModule/Audio_Controller/Altera_UP_SYNC_FIFO.v
+FC:/Users/janapinr/GuitarTunerFPGA/AudioModule/Audio_Controller/Altera_UP_SYNC_FIFO.v
+L0 9
+R5
+r1
+!s85 0
+31
+R6
+R7
+R8
+!i113 1
+R9
+n@altera_@u@p_@s@y@n@c_@f@i@f@o
+vAudio_Clock
+R1
+!i10b 1
+!s100 zMXi]?PGQWc4TB2kK;I9[2
+IbJ2K@aH2^DIGhS;;TIl7E2
+R2
+R0
+R10
+8C:/Users/janapinr/GuitarTunerFPGA/AudioModule/Audio_Controller/Audio_Clock.v
+FC:/Users/janapinr/GuitarTunerFPGA/AudioModule/Audio_Controller/Audio_Clock.v
+Z11 L0 39
+R5
+r1
+!s85 0
+31
+R6
+R7
+R8
+!i113 1
+R9
+n@audio_@clock
+vAudio_Controller
+R1
+!i10b 1
+!s100 <zSf`2aS;^jM9^FV>_a`a2
+IgkHPAIH4N3L0K@J5GYLXe3
+R2
+R0
+w1763344834
+8C:/Users/janapinr/GuitarTunerFPGA/AudioModule/Audio_Controller/Audio_Controller.v
+FC:/Users/janapinr/GuitarTunerFPGA/AudioModule/Audio_Controller/Audio_Controller.v
+R4
+R5
+r1
+!s85 0
+31
+R6
+R7
+R8
+!i113 1
+R9
+n@audio_@controller
+vavconf
+Z12 !s110 1763442126
+!i10b 1
+!s100 EJjnK;_B9a[bW;7Ogb]372
+I6BA[d`1T@3h^Y6NND^b2`0
+R2
+R0
+w1763345145
+8C:/Users/janapinr/GuitarTunerFPGA/AudioModule/avconf/avconf.v
+FC:/Users/janapinr/GuitarTunerFPGA/AudioModule/avconf/avconf.v
+L0 1
+R5
+r1
+!s85 0
+31
+Z13 !s108 1763442125.000000
+Z14 !s107 C:/Users/janapinr/GuitarTunerFPGA/AudioModule/avconf/avconf.v|C:/Users/janapinr/GuitarTunerFPGA/AudioModule/avconf/I2C_Controller.v|
+Z15 !s90 -reportprogress|300|C:/Users/janapinr/GuitarTunerFPGA/AudioModule/avconf/I2C_Controller.v|C:/Users/janapinr/GuitarTunerFPGA/AudioModule/avconf/avconf.v|
+!i113 1
+R9
+vDualClockFIFO
+!s110 1763441939
+!i10b 1
+!s100 1=z@Z93_Q>ch7bY[GThQ40
+IFIJd82B>oY6IlOcU4d2Tb3
+R2
+R0
+w1763437507
+8C:/Users/janapinr/GuitarTunerFPGA/ip/DualClockFIFO.v
+FC:/Users/janapinr/GuitarTunerFPGA/ip/DualClockFIFO.v
+R11
+R5
+r1
+!s85 0
+31
+!s108 1763441939.000000
+!s107 C:/Users/janapinr/GuitarTunerFPGA/ip/DualClockFIFO.v|
+!s90 -reportprogress|300|-work|work|C:/Users/janapinr/GuitarTunerFPGA/ip/DualClockFIFO.v|
+!i113 1
+Z16 o-work work
+R9
+n@dual@clock@f@i@f@o
+vGuitarTunerFPGA
+!s110 1763441755
+!i10b 1
+!s100 g:CI4dD[@@Lm@K=a7@oHa3
+IAle=af@<hM6<bbJ1>nWfV3
+R2
+R0
+w1763438261
+8C:/Users/janapinr/GuitarTunerFPGA/src/GuitarTunerFPGA.v
+FC:/Users/janapinr/GuitarTunerFPGA/src/GuitarTunerFPGA.v
+L0 1
+R5
+r1
+!s85 0
+31
+!s108 1763441755.000000
+!s107 C:/Users/janapinr/GuitarTunerFPGA/src/GuitarTunerFPGA.v|
+!s90 -reportprogress|300|-work|work|C:/Users/janapinr/GuitarTunerFPGA/src/GuitarTunerFPGA.v|
+!i113 1
+R16
+R9
+n@guitar@tuner@f@p@g@a
+vI2C_Controller
+R12
+!i10b 1
+!s100 OAXd<oakAV^2m_WfM4RVS0
+I1KBQ]J@LEZMo3YkYCDE;T0
+R2
+R0
+w1763345143
+8C:/Users/janapinr/GuitarTunerFPGA/AudioModule/avconf/I2C_Controller.v
+FC:/Users/janapinr/GuitarTunerFPGA/AudioModule/avconf/I2C_Controller.v
+L0 43
+R5
+r1
+!s85 0
+31
+R13
+R14
+R15
+!i113 1
+R9
+n@i2@c_@controller
+vtb_Project
+!s110 1763441861
+!i10b 1
+!s100 cdoEKJDeDT=gV=cP?GdTn0
+Iz9n][H5;@63=W^oj;]h`]0
+R2
+R0
+w1763441855
+8testbench.v
+Ftestbench.v
+L0 3
+R5
+r1
+!s85 0
+31
+!s108 1763441861.000000
+!s107 testbench.v|
+!s90 -reportprogress|300|testbench.v|
+!i113 1
+R9
+ntb_@project
+vTunerFFT
+!s110 1763442097
+!i10b 1
+!s100 kf4`R@nFhUE:1kzGgfb5h1
+IJX_TMJ;]@LN]flJFBjezT1
+R2
+R0
+w1763441231
+8C:/Users/janapinr/GuitarTunerFPGA/ip/TunerFFT/TunerFFT/synthesis/TunerFFT.v
+FC:/Users/janapinr/GuitarTunerFPGA/ip/TunerFFT/TunerFFT/synthesis/TunerFFT.v
+L0 6
+R5
+r1
+!s85 0
+31
+!s108 1763442097.000000
+!s107 C:/Users/janapinr/GuitarTunerFPGA/ip/TunerFFT/TunerFFT/synthesis/TunerFFT.v|
+!s90 -reportprogress|300|C:/Users/janapinr/GuitarTunerFPGA/ip/TunerFFT/TunerFFT/synthesis/TunerFFT.v|
+!i113 1
+R9
+n@tuner@f@f@t

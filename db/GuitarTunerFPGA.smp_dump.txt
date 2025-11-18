@@ -1,0 +1,22 @@
+
+State Machine - |GuitarTunerFPGA|read_state
+Name read_state.LAST_READ read_state.READING read_state.START_READ read_state.WAIT_FIFO read_state.DISABLE_EOP 
+read_state.WAIT_FIFO 0 0 0 0 0 
+read_state.START_READ 0 0 1 1 0 
+read_state.READING 0 1 0 1 0 
+read_state.LAST_READ 1 0 0 1 0 
+read_state.DISABLE_EOP 0 0 0 1 1 
+
+State Machine - |GuitarTunerFPGA|write_state
+Name write_state.LAST_WRITE write_state.WRITING write_state.START_WRITE write_state.WAIT_AUDIO_DATA write_state.DISABLE_REQ 
+write_state.WAIT_AUDIO_DATA 0 0 0 0 0 
+write_state.START_WRITE 0 0 1 1 0 
+write_state.WRITING 0 1 0 1 0 
+write_state.LAST_WRITE 1 0 0 1 0 
+write_state.DISABLE_REQ 0 0 0 1 1 
+
+State Machine - |GuitarTunerFPGA|avconf:avc|mSetup_ST
+Name mSetup_ST.0000 mSetup_ST.0010 mSetup_ST.0001 
+mSetup_ST.0000 0 0 0 
+mSetup_ST.0001 1 0 1 
+mSetup_ST.0010 1 1 0 
