@@ -32,7 +32,7 @@ module GuitarTunerFPGA (
 // Inputs
 input				CLOCK_50;
 input		[3:0]	KEY;
-input		[3:0]	SW;
+input		[9:0]	SW;
 output       [9:0]   LEDR;
 
 input				AUD_ADCDAT;
@@ -72,12 +72,13 @@ Audio Controller Interfacing
 
 assign read_audio_in			= audio_in_available; //will set a flag for the audio module to read audio in if theres available signals
 assign write_audio_out			= audio_in_available & audio_out_allowed & SW[0]; //set flag to allow outputting
-
+/*
 wire [2:0] amplification;
 assign amplification = SW[3:1];
 
 assign left_channel_audio_out	= left_channel_audio_in << amplification;
 assign right_channel_audio_out	= right_channel_audio_in << amplification;
+*/
 
 /*******************************************************************************
 
@@ -86,6 +87,36 @@ Bit shift left by n bits (each level is a power of 2 more)
 
 ********************************************************************************/
 
+/*
+reg [25:0] led_counter;
+always @ (posedge CLOCK_50)
+	begin
+		if(!KEY[0])
+			led_counter <= 0;
+		else
+			led_counter <= led_counter+1;
+	end
+
+assign LEDR[9] = led_counter[25];
+reg [12:0] led_counter2;
+reg ledOut;
+always @ (posedge AUD_ADCLRCK)
+	begin
+		if(!KEY[0])
+			begin
+			led_counter2 <= 0;
+			ledOut <= 0;
+			end
+		else if (led_counter2 < 13'd48000)
+			led_counter2 = led_counter2+1;
+		else
+		begin
+			led_counter2 <= 0;
+			ledOut <= ~ledOut;
+		end
+	end
+
+assign LEDR[8] = ledOut;
 /*******************************************************************************
 
 Signal Strength Detector, This will display how much amplitude there is
@@ -96,12 +127,13 @@ each bin is calculated by 10^(18.66n/20)
 We evaluate the highest amplitude first
 
 ********************************************************************************/
+/*
 wire	[30:0] abs_sample;
 assign abs_sample = left_channel_audio_out[31] ? -left_channel_audio_out[30:0] : left_channel_audio_out[30:0];
 reg     [9:0]   amplitude;
 always @ (*)
 begin
-	amplitude = 10'b0;
+	amplitude =9'b0;
     if(abs_sample > 31'd2137962000) //MAX
         amplitude = 10'b1111111111;
     else if(abs_sample > 31'd249459500)
@@ -126,7 +158,8 @@ begin
         amplitude = 10'b0000000000;
 end
 
-assign LEDR[9:0] = amplitude;
+assign LEDR[8:0] = amplitude [8:0];
+*/
 /*****************************************************************************
  *                              Internal Modules                             *
  *****************************************************************************/
@@ -182,16 +215,15 @@ avconf #(.USE_MIC_INPUT(0)) avc (
  *                              Controlling Variables                        *
  *****************************************************************************/
 //writing clocked in at 48K
-wire wrfull, wrempty, wrclk;
+wire wrfull, wrempty;
 reg wrreq;
 
-assign wrclk = AUD_ADCLRCK; //set to whatever preconfigure sampling rate
 
 
 //reading clocked in at 50M
-wire rdempty, rdfull, rdclk;
+wire rdempty, rdfull;
 reg rdreq;
-assign rdclk = CLOCK_50; //this is the same clock feeding into the fft
+ //this is the same clock feeding into the fft
 //general stuff
 wire aclr;
 wire [31:0] audio_in, audio_out;
@@ -206,12 +238,24 @@ reg [2:0] write_state, next_write_state;
 
 parameter WAIT_AUDIO_DATA = 3'b000, START_WRITE = 3'b001, WRITING = 3'b010, LAST_WRITE = 3'b011, DISABLE_REQ = 3'b100;
 
+reg audio_captured;
+// Capture audio_in_available pulse and hold it
+always @ (posedge AUD_ADCLRCK)
+begin
+    if(!KEY[0])
+        audio_captured <= 0;
+    else if(audio_in_available)  // Capture the pulse
+        audio_captured <= 1;
+    else if(write_state == DISABLE_REQ)  // Clear after we're done writing
+        audio_captured <= 0;
+end
+
 //cct a
 
 always @ (*)
     begin
         case(write_state)
-        WAIT_AUDIO_DATA: if(audio_in_available & wrempty) next_write_state = START_WRITE; else next_write_state = WAIT_AUDIO_DATA;
+        WAIT_AUDIO_DATA: if(wrempty & SW[1]) next_write_state = START_WRITE; else next_write_state = WAIT_AUDIO_DATA;
         START_WRITE: next_write_state = WRITING;
         WRITING: if(wrusedw == 14'd8191) next_write_state = LAST_WRITE; else next_write_state = WRITING;
         LAST_WRITE: next_write_state = DISABLE_REQ;
@@ -231,17 +275,21 @@ always @ (posedge AUD_ADCLRCK)
     end
 
 //based on the current state what are the outputs
+
 always @ (*)
     begin
         case (write_state)
-            WAIT_AUDIO_DATA: wrreq = 0;
-            START_WRITE: wrreq = 1;
-            WRITING: wrreq = 1;
-            LAST_WRITE: wrreq = 1;
-            DISABLE_REQ: wrreq = 0;
-            default: wrreq = 0;
+            WAIT_AUDIO_DATA: begin wrreq = 0; end
+            START_WRITE: begin wrreq = 1; end
+            WRITING: begin wrreq = 1;end
+            LAST_WRITE: begin wrreq = 1;end
+            DISABLE_REQ: begin wrreq = 0;  end
+            default: begin wrreq = 0; amongussy = 5'b00000; end
         endcase 
     end
+	 
+
+
 
 /*****************************************************************************
  *                              FIFO READ CONTROL                            *
@@ -249,18 +297,28 @@ always @ (*)
 
 // FFT PARAMS
 //audio out is linked to fft 
-reg sink_valid, sink_sop, sink_eop, sink_ready;
+reg sink_valid, sink_sop, sink_eop;
+wire sink_ready;
 reg [2:0] read_state, next_read_state;
 wire [12:0] rdusedw;
 
 parameter WAIT_FIFO = 3'b000, START_READ = 3'b001, READING = 3'b010, LAST_READ = 3'b011, DISABLE_EOP = 3'b100;
 
+reg [12:0] readCount;
+
+always @ (posedge CLOCK_50)
+	begin
+		if(!KEY[0] || read_state == WAIT_FIFO)
+			readCount <= 13'd0;
+		else if (rdreq)
+			readCount <= readCount + 1;
+	end
 always @ (*)
     begin
         case (read_state)
-            WAIT_FIFO: if(rdfull & sink_ready) next_read_state = START_READ; else next_read_state = WAIT_FIFO;
+            WAIT_FIFO: if(rdfull & SW[2]) next_read_state = START_READ; else next_read_state = WAIT_FIFO;
             START_READ: next_read_state = READING;
-            READING: if(rdusedw == 1) next_read_state = LAST_READ; else next_read_state = READING;
+            READING: if(readCount == 13'd8190) next_read_state = LAST_READ; else next_read_state = READING;
             LAST_READ:
                 begin
                     next_read_state = DISABLE_EOP;
@@ -277,6 +335,7 @@ always @ (posedge CLOCK_50)
         else
             read_state <= next_read_state;
     end
+reg [4:0] amongussy;
 
 always @ (*) 
     begin 
@@ -287,7 +346,7 @@ always @ (*)
                     sink_valid = 0;
                     sink_sop = 0;
                     sink_eop = 0;
-
+							amongussy = 5'b00001;
                 end
             START_READ:
                 begin
@@ -295,6 +354,7 @@ always @ (*)
                     sink_valid = 1;
                     sink_sop = 1;
                     sink_eop = 0;
+						  amongussy = 5'b00010;
                 end
             READING: 
                 begin
@@ -302,6 +362,7 @@ always @ (*)
                     sink_valid = 1;
                     sink_sop = 0;
                     sink_eop = 0;
+						  amongussy = 5'b00100;
                 end
             LAST_READ:
                 begin
@@ -309,6 +370,7 @@ always @ (*)
                     sink_valid = 1;
                     sink_sop = 0;
                     sink_eop = 1;
+						  amongussy = 5'b01000;
                 end
             DISABLE_EOP:
                 begin
@@ -316,6 +378,7 @@ always @ (*)
                     sink_valid = 0;
                     sink_sop = 0;
                     sink_eop = 0;
+						  amongussy = 5'b10000;
                 end
             default: 
                 begin
@@ -323,10 +386,19 @@ always @ (*)
                     sink_valid = 0;
                     sink_sop = 0;
                     sink_eop = 0;
+						  amongussy = 5'b00000;
                 end
         endcase
     end
-
+	 
+assign LEDR[0] = sink_ready;
+assign LEDR[1] = sink_valid;
+assign LEDR[2] = rdreq;
+assign LEDR[3] = sink_ready & sink_valid;
+assign LEDR[6] = rdempty;
+assign LEDR[7] = rdfull;
+assign LEDR[8] = wrempty;
+assign LEDR[9] = wrfull;
 /****
 
 Reconfigure for handshake with FFT
@@ -337,11 +409,11 @@ wire [1:0] eccstatus; //needed when debugging
 
 DualClockFIFO FIFO(
 					
-    .aclr (aclr), //check
+    .aclr (~KEY[0]), //check
     .data (audio_in), //check
-    .rdclk (rdclk), //check
+    .rdclk (CLOCK_50), //check
     .rdreq (rdreq), //check
-    .wrclk (wrclk), //check
+    .wrclk (AUD_ADCLRCK), //check
     .wrreq (wrreq), //check
     .q (audio_out), // check 
     .rdempty (rdempty), //empty from reading
@@ -364,7 +436,9 @@ assign fftpts_out = 14'd8192;
 
 //fft outputs
 wire source_sop, source_eop, source_ready; 
+
 wire [31:0] source_real, source_imag; 
+assign source_ready = 1;
 
 //fft output flags set by us
 wire source_valid; //whenever you are ready to read a frame 
@@ -392,5 +466,9 @@ TunerFFT FFT (
     .source_imag  (source_imag),  //       .source_imag
     .fftpts_out   (fftpts_out)    //       .fftpts_out
 );
+
+
+
+
 endmodule
 
